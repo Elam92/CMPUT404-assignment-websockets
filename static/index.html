@@ -123,8 +123,14 @@ function getPosition(e) {
 
 function addEntity(entity, data) {
     world[entity] = data;
-    drawNextFrame(); // (but should we?)
+    //drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
+    var jsonData = {};
+    jsonData[entity] = data;
+    
+    // NOTE: Sending it as { entity : data } doesn't work
+    // Because the entity name will always be "entity" rather than X##
+    socket.send(JSON.stringify(jsonData));
 }
 var counter = 0;
 function addEntityWithoutName(data) {
@@ -245,9 +251,9 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
 
 
 function update() {
+    drawNextFrame();
     drawFrame();
 }
-
 
 function wsSetup() {
     var url = "ws://"+host+"/subscribe";   
@@ -261,7 +267,13 @@ function wsSetup() {
     socket.onmessage = function(msg) {  
         try {
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            //XXX: TODO What are you going to do here?
+            var fillWorld = JSON.parse(msg.data);
+            console.log(fillWorld);
+            for(var entity in fillWorld) {
+                console.log(entity);
+                world[entity] = fillWorld[entity];
+            }
         } catch (e) {
             alert("socket on message: " + e);
         }
