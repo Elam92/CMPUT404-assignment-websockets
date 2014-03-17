@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-# Copyright (c) 2013-2014 Abram Hindle
+# Copyright (c) 2013-2014 Abram Hindle and Eric Lam
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Taken Code from https://github.com/abramhindle/WebSocketsExamples/
+# To do implementation of the sockets.
 #
 import flask
 from flask import Flask, request, redirect, url_for
@@ -94,8 +97,6 @@ def read_ws(ws,client):
         while True:
             msg = ws.receive()
             print "WS RECV: %s" % msg
-            if "start" in msg:
-                ws.send(json.dumps(myWorld.world()))
             if (msg is not None):
                 packet = json.loads(msg)
                 for entity, data in packet.iteritems():
@@ -116,6 +117,7 @@ def subscribe_socket(ws):
     clients.append(client)
     g = gevent.spawn( read_ws, ws, client )    
     print "Subscribing"
+    ws.send(json.dumps(myWorld.world()))
     try:
         while True:
             msg = client.get()

@@ -10,14 +10,22 @@ Make a shared state Websockets drawing program
 Prereqs
 =======
 
+brew install libevent
+
 pip install flask-sockets
+
+pip install greenlet
+
+pip install gevent
 
 pip install ws4py
 
 Contributors / Licensing
 ========================
 
-Generally everything is LICENSE'D under the Apache 2 license by Abram Hindle.
+Generally everything is LICENSE'D under the Apache 2 license by Abram Hindle and Eric Lam.
+
+Used code from https://github.com/abramhindle/WebSocketsExamples/ for the web sockets implementation.
 
 freetests.py is LICENSE'D under a BSD-like license:
 

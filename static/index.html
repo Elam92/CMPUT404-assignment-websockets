@@ -35,6 +35,7 @@ var W = canvas.width  = window.innerWidth-6;
 var H = canvas.height = window.innerHeight-50;
 var wscounter = 0;
 var socket;
+var shapeCounter = 0;
 
 function debug(str) {
     var debugDiv = document.getElementById('debug');
@@ -43,6 +44,7 @@ function debug(str) {
 debug("Test");
 
 world = {};
+var fillCircle = false;
 
 //XXX: TODO Make this prettier!
 function drawCircle(context,entity) {
@@ -55,7 +57,9 @@ function drawCircle(context,entity) {
         fillStyle = entity["colour"];
         strokeStyle = fillStyle;
         arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
-        stroke();                                
+        stroke();  
+        if(fillCircle)
+            fill();                               
     }
 }
 
@@ -127,14 +131,16 @@ function addEntity(entity, data) {
     //XXX: Send a XHTML Request that updates the entity you just modified!
     var jsonData = {};
     jsonData[entity] = data;
-    
+
     // NOTE: Sending it as { entity : data } doesn't work
     // Because the entity name will always be "entity" rather than X##
     socket.send(JSON.stringify(jsonData));
 }
+
 var counter = 0;
 function addEntityWithoutName(data) {
-    var name = "X"+(counter++)%100;
+    //var name = "X"+(counter++)%100;
+    var name = "X"+(++shapeCounter)%200;
     addEntity(name,data);
 }
 
@@ -236,19 +242,29 @@ mouse = (function() {
 
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
+// Random colour when mouse down and when mouse is dragged
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'white'});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'rgb('+ randomNumber() + ',' + randomNumber() + ',' + randomNumber() + ')'});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y, 'colour':'rgb('+ randomNumber() + ',' + randomNumber() + ',' + randomNumber() + ')', 'radius':10});
 });
 
+
+// Fill those circles up or not
+window.addEventListener('keypress', function(e) {
+    fillCircle = !fillCircle;
+}, false);
+
+// Generate a number between 1 and 255
+function randomNumber() {
+    return Math.floor((Math.random() * 255) + 1);
+}
 
 function update() {
     drawNextFrame();
@@ -266,13 +282,14 @@ function wsSetup() {
     };
     socket.onmessage = function(msg) {  
         try {
-            debug("WebSocket Recv:" + msg.data);
+            //debug("WebSocket Recv:" + msg.data);
             //XXX: TODO What are you going to do here?
             var fillWorld = JSON.parse(msg.data);
             console.log(fillWorld);
             for(var entity in fillWorld) {
                 console.log(entity);
                 world[entity] = fillWorld[entity];
+                shapeCounter = entity.split("X")[1];
             }
         } catch (e) {
             alert("socket on message: " + e);
